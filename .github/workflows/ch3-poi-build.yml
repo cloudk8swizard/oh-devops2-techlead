@@ -1,6 +1,6 @@
 name: CH3-POI-BUILD
 
- on:
+on:
   pull_request:
    branches: [ master ]
    paths: 
