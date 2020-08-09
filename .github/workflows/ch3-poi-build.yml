@@ -34,7 +34,7 @@ jobs:
       run: dotnet build --configuration Release apis/poi/tests/UnitTests/UnitTests.csproj
 
     - name: .NET Test
-      #The next "run" has been disable since Coveralls does not support private Repos with the free option.
+      # The next "run" has been disable since Coveralls does not support private Repos with the free option.
       #run: dotnet test --no-restore --verbosity normal apis/poi/tests/UnitTests  /p:CollectCoverage=true /p:CoverletOutput=lcov/ /p:CoverletOutputFormat=lcov
       #The following action will execute the *.csproj solution inside the specified directory
       run: dotnet test --no-restore --verbosity normal apis/poi/tests/UnitTests 
