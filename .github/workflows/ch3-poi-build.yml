@@ -1,7 +1,7 @@
 name: CH3-POI-BUILD
 
 on:
-  pull_request:    
+  push:    
    branches: [ master ]
    paths: 
     - apis/poi/**
