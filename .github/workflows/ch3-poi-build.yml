@@ -3,13 +3,13 @@ name: CH3-POI-BUILD
 on:
   pull_request:
     branches:
-      - master
+      - REPLACE-WITH-MASTER-BRANCH-NAME
     paths: 
     - apis/poi/**
     - .github/workflows/ch3-poi-build.yml
 
   push:    
-   branches: [ master ]
+   branches: [ REPLACE-WITH-MASTER-BRANCH-NAME ]
    paths: 
     - apis/poi/**
     - .github/workflows/ch3-poi-build.yml
