@@ -1,7 +1,7 @@
 name: CH3-POI-BUILD
 
-on:
-  # If you want to trigger this branch then change the branch name to a usable branch name
+# If you want to trigger this branch then change the branch name to a usable branch name
+on:  
   pull_request:
     branches:
       - REPLACE-WITH-MASTER-BRANCH-NAME
