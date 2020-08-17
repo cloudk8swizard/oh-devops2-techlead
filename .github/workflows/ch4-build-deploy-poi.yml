@@ -7,20 +7,22 @@ env:
   docker_path: apis/poi/web
   webapp_name:  openhackflo1xyl7poi
 
+# If you want to trigger this branch then change the branch name to a usable branch name
 on:
   push:
-    branches: [ openhack_refresh ]
+    branches: [ REPLACE-WITH-MASTER-BRANCH-NAME ]
     paths: 
       - apis/poi/**  
       - .github/workflows/ch4-build-deploy-poi.yml
   pull_request:
-   branches: [ openhack_refresh ]
+   branches: [ REPLACE-WITH-MASTER-BRANCH-NAME ]
    paths: 
     - apis/poi/**
     - .github/workflows/ch4-build-deploy-poi.yml
 
 jobs:
-  # CI Phase
+
+  # CI Phase - BUILD AND TEST CODE CHANGES
   build_and_test:
     runs-on: ubuntu-latest
     steps:
@@ -68,7 +70,7 @@ jobs:
             body: body
           });
           
-  # CD Phase 2 - 1
+  # CD Phase 2 - 1 - PUSH TO ACR
   docker_build_and_push:
     if: github.ref == 'refs/heads/openhack_refresh'
     runs-on: ubuntu-latest
@@ -97,7 +99,8 @@ jobs:
             title: "${{ env.build_name }} Workflow ${{ github.run_number }} Failed! ",
             body: body
           });
-    
+
+  # CD Phase 2 - 2  - PUSH NEW CODE FROM ACR TO WEBAPP STAGING SLOT
   deploy_staging:
     if: github.ref == 'refs/heads/openhack_refresh'
     runs-on: ubuntu-latest
