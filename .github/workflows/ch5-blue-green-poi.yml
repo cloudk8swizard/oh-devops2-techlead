@@ -18,12 +18,10 @@ on:
     branches: [ openhack_refresh ]
     paths: 
       - apis/poi/**  
-      - .github/workflows/ch4-build-deploy-poi.yml
   pull_request:
    branches: [ openhack_refresh ]
    paths: 
     - apis/poi/**
-    - .github/workflows/ch4-build-deploy-poi.yml
 
 jobs:
 
