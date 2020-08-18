@@ -131,12 +131,21 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Run Validation script
-      run: |
-        pwd
-        ls -la
-        chmod +x poihttp.sh
-        ./poihttp.sh
+    #- name: Run Validation script
+    #  run: |
+    #    pwd
+    #    ls -la
+    #    chmod +x poihttp.sh
+    #    ./poihttp.sh
+
+    - name: "Set Expected Validation Tag"
+      run: sed -i 's/<--tag-->/${{github.run_number}}/g' apis/poi/webvalidate/validate.json
+
+    - name: Build Validation Container
+      run: docker build -t poivalidate apis/poi/webvalidate
+
+    - name: Web Validate 
+      run: ./run.sh poivalidate $staging_url 
 
     - uses: actions/github-script@0.9.0
       if: failure()
