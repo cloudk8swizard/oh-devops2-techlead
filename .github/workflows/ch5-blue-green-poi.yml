@@ -123,7 +123,7 @@ jobs:
         slot-name: staging
         images: ${{ env.registry }}/${{ env.repository }}:${{github.run_number}}
   
-  # CD Phase 3 - 1  - VALIDATE WEBAPP STAGING SLOT HTTP STATUS
+  # CD Phase 3 - 1 - VALIDATE WEBAPP STAGING SLOT HTTP STATUS
   validate_staging:
     if: github.ref == 'refs/heads/openhack_refresh'
     runs-on: ubuntu-latest
