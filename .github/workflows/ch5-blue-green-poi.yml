@@ -1,4 +1,4 @@
-name: POI CICD - Ch4-BuildAndDeploy
+name: POI CICD - Ch5-BlueGreenDeployment
 
 # Variables used in the jobs
 env:
@@ -6,16 +6,20 @@ env:
   repository:  devopsoh/api-poi
   docker_path: apis/poi/web
   webapp_name:  openhackflo1xyl7poi
+  poi_path: apis/poi/**
+  staging_url: https://openhackflo1xyl7poi-staging.azurewebsites.net
+  prod_url: https://openhackflo1xyl7poi.azurewebsites.net
+  resource_group: openhackflo1xyl7rg
 
 # If you want to trigger this branch then change the branch name to a usable branch name
 on:
   push:
-    branches: [ REPLACE-WITH-MASTER-BRANCH-NAME ]
+    branches: [ openhack_refresh ]
     paths: 
       - apis/poi/**  
       - .github/workflows/ch4-build-deploy-poi.yml
   pull_request:
-   branches: [ REPLACE-WITH-MASTER-BRANCH-NAME ]
+   branches: [ openhack_refresh ]
    paths: 
     - apis/poi/**
     - .github/workflows/ch4-build-deploy-poi.yml
@@ -117,3 +121,33 @@ jobs:
         app-name: ${{ env.webapp_name }}
         slot-name: staging
         images: ${{ env.registry }}/${{ env.repository }}:${{github.run_number}}
+  
+  # CD Phase 3 - 1  - VALIDATE WEBAPP STAGING SLOT HTTP STATUS
+  validate_staging:
+    if: github.ref == 'refs/heads/openhack_refresh'
+    runs-on: ubuntu-latest
+    needs: deploy_staging
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: "Set Expected Validation Tag"
+      run: sed -i 's/<--tag-->/${{github.run_number}}/g' apis/poi/webvalidate/validate.json
+
+    - name: Build Validation Container
+      run: docker build -t poivalidate apis/poi/webvalidate
+
+    - name: Web Validate 
+      run: ./run.sh poivalidate $staging_url 
+
+    - uses: actions/github-script@0.9.0
+      if: failure()
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          let body = "${{ env.build_name }} Worflow Failure \n Build Number: ${{ github.run_number }} \n Build Log: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n SHA: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }}) \n";
+          github.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: "${{ env.build_name }} Workflow ${{ github.run_number }} Failed! ",
+            body: body
+          });
