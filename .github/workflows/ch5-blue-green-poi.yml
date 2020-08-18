@@ -17,11 +17,13 @@ on:
   push:
     branches: [ openhack_refresh ]
     paths: 
-      - apis/poi/**  
+      - apis/poi/**
+      - .github/workflows/ch5-blue-green-poi.yml
   pull_request:
    branches: [ openhack_refresh ]
    paths: 
     - apis/poi/**
+    - .github/workflows/ch5-blue-green-poi.yml
 
 jobs:
 
