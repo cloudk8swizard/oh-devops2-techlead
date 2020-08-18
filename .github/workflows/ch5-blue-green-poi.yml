@@ -138,24 +138,8 @@ jobs:
     #    chmod +x poihttp.sh
     #    ./poihttp.sh
 
-    - name: "Set Expected Validation Tag"
-      run: sed -i 's/<--tag-->/${{github.run_number}}/g' apis/poi/webvalidate/validate.json
-
-    - name: Build Validation Container
-      run: docker build -t poivalidate apis/poi/webvalidate
-
-    - name: Web Validate 
-      run: ./run.sh poivalidate $staging_url 
-
-    - uses: actions/github-script@0.9.0
-      if: failure()
+    - name: Web Validate
+      uses: hattan/webvalidate-action@v1.0.0
       with:
-        github-token: ${{secrets.GITHUB_TOKEN}}
-        script: |
-          let body = "${{ env.build_name }} Worflow Failure \n Build Number: ${{ github.run_number }} \n Build Log: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n SHA: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }}) \n";
-          github.issues.create({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            title: "${{ env.build_name }} Workflow ${{ github.run_number }} Failed! ",
-            body: body
-          });
+        server: $staging_url 
+        filename: apis/poi/webvalidate/validate.json
