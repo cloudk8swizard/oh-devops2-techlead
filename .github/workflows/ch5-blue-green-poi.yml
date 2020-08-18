@@ -10,6 +10,7 @@ env:
   staging_url: https://openhackflo1xyl7poi-staging.azurewebsites.net
   prod_url: https://openhackflo1xyl7poi.azurewebsites.net
   resource_group: openhackflo1xyl7rg
+  build_name: POI
 
 # If you want to trigger this branch then change the branch name to a usable branch name
 on:
@@ -130,14 +131,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: "Set Expected Validation Tag"
-      run: sed -i 's/<--tag-->/${{github.run_number}}/g' apis/poi/webvalidate/validate.json
-
-    - name: Build Validation Container
-      run: docker build -t poivalidate apis/poi/webvalidate
-
-    - name: Web Validate 
-      run: ./run.sh poivalidate $staging_url 
+    - name: Run Validation script
+      run: |
+        pwd
+        ls -la
+        chmod +x poihttp.sh
+        ./poihttp.sh
 
     - uses: actions/github-script@0.9.0
       if: failure()
