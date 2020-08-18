@@ -5,7 +5,8 @@ declare hasUrl=""
 declare endpoint
 declare -i status200count=0
 
-endpoint='https://openhackflo1xyl7poi-staging.azurewebsites.net/api/healthcheck/poi-f'
+# Paste the webapp site you want to monitor
+endpoint='https://openhackflo1xyl7poi-staging.azurewebsites.net/api/healthcheck/poi'
 
 healthcheck() {
     declare url=$1
