@@ -176,7 +176,7 @@ jobs:
     needs: validate_staging
     steps:
     - name: Checkout current default repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v1
 
     - name: Local k6 test
       run: k6 run docker/script.js
