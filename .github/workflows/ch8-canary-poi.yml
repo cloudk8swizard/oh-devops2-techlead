@@ -179,7 +179,7 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS  }} 
       
-    - name: Swap staging to production
+    - name: Route 10% only to Staging Slot
       run: |
         az webapp traffic-routing set --distribution staging=10 --name ${{ env.webapp_name }} --resource-group $resource_group
   
@@ -189,7 +189,10 @@ jobs:
     needs: route_traffic_ten_percent
     steps:
     - name: Install Apache Bench
-      run: sudo apt-get install  apache2-utils
+      run: |
+        sudo apt-get update
+        sudo apt-get upgrade
+        sudo apt-get install apache2-utils
 
     - name: Load Test 
       run: | 
@@ -209,7 +212,7 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS  }} 
     
-    - name: Swap staging to production
+    - name: Route 100% to Staging Slot
       run: |
         az webapp traffic-routing set --distribution staging=100 --name ${{ env.webapp_name }} --resource-group $resource_group
         
@@ -219,7 +222,10 @@ jobs:
     needs: route_traffic_onehundred_percent
     steps:
     - name: Install Apache Bench
-      run: sudo apt-get install  apache2-utils
+      run: |
+        sudo apt-get update
+        sudo apt-get upgrade
+        sudo apt-get install apache2-utils
 
     - name: Load Test 
       run: | 
@@ -228,12 +234,27 @@ jobs:
           exit -1
         fi   
 
+  # CD Phase 8-3 - CLEAR ROUTING RULES AND SEND ALL TRAFFIC TO PRODUCTION AGAIN
+  clear_route_traffic:
+    if: github.ref == 'refs/heads/openhack_refresh'
+    runs-on: ubuntu-latest
+    needs: validate_onhundred_percent
+    steps:
+    - name: Azure authentication
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS  }} 
+    
+    - name: Clear routing rules
+      run: |        
+        az webapp traffic-routing clear --name ${{ env.webapp_name }} --resource-group $resource_group
+        
   # CD Phase 7 - LOAD TESTING WITH K6
   k6_cloud_test:
     if: github.ref == 'refs/heads/openhack_refresh'
     name: k6 cloud test run
     runs-on: ubuntu-latest
-    needs: validate_onhundred_percent
+    needs: clear_route_traffic
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -317,4 +338,4 @@ jobs:
     - name: Swap production and staging
       run: |
         az webapp deployment slot swap --name $webapp_name --resource-group $resource_group --slot staging --target-slot production 
-
+        
