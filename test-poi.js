@@ -6,7 +6,7 @@ import http from "k6/http";
     ]
 };
 export default function() {
-    var r = http.get("http://test.loadimpact.com");
+    var r = http.get("https://openhackflo1xyl7poi-staging.azurewebsites.net/api/healthcheck/poi");
     check(r, {
         "status is 200": (r) => r.status === 200
     });
