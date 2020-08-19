@@ -201,7 +201,7 @@ jobs:
   validate_production:
     if: github.ref == 'refs/heads/openhack_refresh'
     runs-on: ubuntu-latest
-    needs: deploy_staging
+    needs: swap_slots
     steps:
     - uses: actions/checkout@v2
 
