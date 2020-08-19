@@ -168,7 +168,7 @@ jobs:
             body: body
           });
 
-  # CD Phase 7 - 1 - LOAD TESTING
+  # CD Phase 7 - 1 - LOAD TESTING WITH K6
   k6_cloud_test:
     if: github.ref == 'refs/heads/openhack_refresh'
     name: k6 cloud test run
