@@ -15,12 +15,12 @@ env:
 # If you want to trigger this branch then change the branch name to a usable branch name
 on:
   push:
-    branches: [ REPLACE-WITH-MASTER-BRANCH-NAME ]
+    branches: [ openhack_refresh ]
     paths: 
       - apis/poi/**
       - .github/workflows/ch5-blue-green-poi.yml
   pull_request:
-   branches: [ REPLACE-WITH-MASTER-BRANCH-NAME ]
+   branches: [ openhack_refresh ]
    paths: 
     - apis/poi/**
     - .github/workflows/ch5-blue-green-poi.yml
@@ -168,11 +168,24 @@ jobs:
             body: body
           });
 
+  # CD Phase 7 - 1 - LOAD TESTING
+  load_testing:
+    if: github.ref == 'refs/heads/openhack_refresh'
+    runs-on: ubuntu-latest
+    container: docker://loadimpact/k6:latest
+    needs: validate_staging
+    steps:
+    - name: Checkout current default repo
+      uses: actions/checkout@v2
+
+    - name: Local k6 test
+      run: k6 run docker/script.js
+
   # CD Phase 3 - 2 - SWAP SLOTS FROM STAGING TO PRODUCTION
   swap_slots:
     if: github.ref == 'refs/heads/openhack_refresh'
     runs-on: ubuntu-latest
-    needs: validate_staging
+    needs: load_testing
     steps:
     - name: Azure authentication
       uses: azure/login@v1
@@ -201,7 +214,7 @@ jobs:
   validate_production:
     if: github.ref == 'refs/heads/openhack_refresh'
     runs-on: ubuntu-latest
-    needs: deploy_staging
+    needs: swap_slots
     steps:
     - uses: actions/checkout@v2
 
@@ -240,3 +253,4 @@ jobs:
     - name: Swap production and staging
       run: |
         az webapp deployment slot swap --name $webapp_name --resource-group $resource_group --slot staging --target-slot production 
+
