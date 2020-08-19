@@ -18,12 +18,12 @@ on:
     branches: [ openhack_refresh ]
     paths: 
       - apis/poi/**
-      - .github/workflows/ch5-blue-green-poi.yml
+      - .github/workflows/ch7-qa-sec-poi.yml
   pull_request:
    branches: [ openhack_refresh ]
    paths: 
     - apis/poi/**
-    - .github/workflows/ch5-blue-green-poi.yml
+    - .github/workflows/ch7-qa-sec-poi.yml
 
 jobs:
 
