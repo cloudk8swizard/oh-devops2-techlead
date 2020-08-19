@@ -1,4 +1,4 @@
-name: POI CICD - Ch7-BlueGreenDeploymentWithSecurityAndLoadTesting
+name: POI CICD - Ch8-CanaryDeployment
 
 # Variables used in the jobs
 env:
@@ -15,15 +15,15 @@ env:
 # If you want to trigger this branch then change the branch name to a usable branch name
 on:
   push:
-    branches: [ REPLACE-WITH-MASTER-BRANCH-NAME ]
+    branches: [ openhack_refresh ]
     paths: 
       - apis/poi/**
-      - .github/workflows/ch7-qa-sec-poi.yml
+      - .github/workflows/ch8-canary-poi.yml
   pull_request:
-   branches: [ REPLACE-WITH-MASTER-BRANCH-NAME ]
+   branches: [ openhack_refresh ]
    paths: 
     - apis/poi/**
-    - .github/workflows/ch7-qa-sec-poi.yml
+    - .github/workflows/ch8-canary-poi.yml
 
 jobs:
 
@@ -168,12 +168,72 @@ jobs:
             body: body
           });
 
+  # CD Phase 8-1 - PHASED ROLLOUT 10%
+  route_traffic_ten_percent:
+    if: github.ref == 'refs/heads/openhack_refresh'
+    runs-on: ubuntu-latest
+    needs: validate_staging
+    steps:
+    - name: Azure authentication
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS  }} 
+      
+    - name: Swap staging to production
+      run: |
+        az webapp traffic-routing set --distribution staging=10 --name ${{ env.webapp_name }} --resource-group $resource_group
+  
+  validate_ten_percent:
+    if: github.ref == 'refs/heads/openhack_refresh'
+    runs-on: ubuntu-latest
+    needs: route_traffic_ten_percent
+    steps:
+    - name: Install Apache Bench
+      run: sudo apt-get install  apache2-utils
+
+    - name: Load Test 
+      run: | 
+        failures=$(ab -t 10 -c 10 ${{ env.prod_url }}/api/version/poi | grep -Poe 'Failed requests: \K.*' | sed 's/^ *//g')
+        if [ "$failures" -gt "0" ];then
+          exit -1
+        fi  
+
+  # CD Phase 8-2 - PHASED ROLLOUT 100%
+  route_traffic_onehundred_percent:
+    if: github.ref == 'refs/heads/openhack_refresh'
+    runs-on: ubuntu-latest
+    needs: validate_ten_percent
+    steps:
+    - name: Azure authentication
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS  }} 
+    
+    - name: Swap staging to production
+      run: |
+        az webapp traffic-routing set --distribution staging=100 --name ${{ env.webapp_name }} --resource-group $resource_group
+        
+  validate_onhundred_percent:
+    if: github.ref == 'refs/heads/openhack_refresh'
+    runs-on: ubuntu-latest
+    needs: route_traffic_onehundred_percent
+    steps:
+    - name: Install Apache Bench
+      run: sudo apt-get install  apache2-utils
+
+    - name: Load Test 
+      run: | 
+        failures=$(ab -t 10 -c 10 ${{ env.prod_url }}/api/version/poi | grep -Poe 'Failed requests: \K.*' | sed 's/^ *//g')
+        if [ "$failures" -gt "0" ];then
+          exit -1
+        fi   
+
   # CD Phase 7 - LOAD TESTING WITH K6
   k6_cloud_test:
     if: github.ref == 'refs/heads/openhack_refresh'
     name: k6 cloud test run
     runs-on: ubuntu-latest
-    needs: validate_staging
+    needs: validate_onhundred_percent
     steps:
       - name: Checkout
         uses: actions/checkout@v1
